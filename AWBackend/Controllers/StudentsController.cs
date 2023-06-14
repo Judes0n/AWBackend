@@ -45,6 +45,18 @@ namespace AWBackend.Controllers
             {
                 list = await _context.Students.Where(s=>s.Course == key).ToListAsync();
             }
+            if (list.Count == 0)
+            {
+                list = await _context.Students.Where(s => s.StudentId == Convert.ToInt32(key)).ToListAsync();
+            }
+            if (list.Count == 0)
+            {
+                list = await _context.Students.Where(s => s.Age > Convert.ToInt32(key)).ToListAsync();
+            }
+            if (list.Count == 0)
+            {
+                list = await _context.Students.Where(s => s.Dob == key).ToListAsync();
+            }
             return list;
         }
 
