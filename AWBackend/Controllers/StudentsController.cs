@@ -20,9 +20,9 @@ namespace AWBackend.Controllers
             _context = context;
         }
 
-        // GET: api/Students
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        [Route("GetAllStudents")]
+        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
         {
           if (_context.Students == null)
           {
@@ -31,8 +31,25 @@ namespace AWBackend.Controllers
             return await _context.Students.ToListAsync();
         }
 
-        // GET: api/Students/5
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route("SearchStudent/{key}")]
+        public async Task<ActionResult<IEnumerable<Student>>> SearchStudent(string key)
+        {
+            if (_context.Students == null)
+            {
+                return NotFound();
+            }
+            List<Student> list = new();
+            list = await _context.Students.Where(s=>s.Name == key).ToListAsync();
+            if(list.Count == 0)
+            {
+                list = await _context.Students.Where(s=>s.Course == key).ToListAsync();
+            }
+            return list;
+        }
+
+        [HttpGet]
+        [Route("GetStudent/{id}")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
           if (_context.Students == null)
@@ -49,9 +66,10 @@ namespace AWBackend.Controllers
             return student;
         }
 
-        // PUT: api/Students/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStudent(int id, Student student)
+     
+        [HttpPut]
+        [Route("UpdateStudent/{id}")]
+        public async Task<IActionResult> UpdateStudent(int id, Student student)
         {
             if (id != student.StudentId)
             {
@@ -79,10 +97,15 @@ namespace AWBackend.Controllers
             return NoContent();
         }
 
-        // POST: api/Students
         [HttpPost]
-        public async Task<ActionResult<Student>> PostStudent(Student student)
+        [Route("AddStudent")]
+        public async Task<ActionResult<Student>> AddStudent(Student student)
         {
+            var test = _context.Students.FirstOrDefaultAsync(s => s.Name == student.Name);
+            if ( test.IsFaulted)
+            {
+                return Problem("Name is Used Already!");
+            }
           if (_context.Students == null)
           {
               return Problem("Entity set 'AwdbContext.Students'  is null.");
@@ -93,8 +116,9 @@ namespace AWBackend.Controllers
             return CreatedAtAction("GetStudent", new { id = student.StudentId }, student);
         }
 
-        // DELETE: api/Students/5
-        [HttpDelete("{id}")]
+        
+        [HttpDelete]
+        [Route("DeleteStudent/{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
             if (_context.Students == null)
